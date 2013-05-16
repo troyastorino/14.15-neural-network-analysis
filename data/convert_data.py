@@ -9,8 +9,11 @@ def convert_file(filename):
   classification = []
   features = []
   for line in lines:
-    toks = line.split(' ')
-    classification.append(int(toks[0]))
+    toks = line.rstrip().split(' ')
+    cls = int(toks[0])
+    if cls == -1:
+        cls = 0
+    classification.append(cls)
     feats = []
     for tok in toks[1:]:
       feats.append(float(tok.split(':')[1]))
@@ -18,5 +21,6 @@ def convert_file(filename):
 
   scipy.io.savemat(filename.split('.')[0]+'.mat', mdict={'out': classification, 'in': features})
 
-convert_file('svmguide1')
-convert_file('svmguide1-t')
+
+for f in ['svmguide1', 'svmguide1-t', 'splice', 'splice-t']:
+    convert_file(f)

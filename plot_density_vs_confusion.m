@@ -3,7 +3,6 @@ function plot_density_vs_confusion( density, c )
 %   Detailed explanation goes here
 
 figure;
-
 errorbar(density, mean(c), std(c));
 xlabel('Interlayer density', 'FontSize', 16)
 ylabel('Percent mislabeled', 'FontSize', 16)

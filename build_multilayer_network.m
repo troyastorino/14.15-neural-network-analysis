@@ -23,6 +23,7 @@ net.divideMode = 'sample';
 %net.divideParam;
 net.initFcn = 'initlay';
 net.trainFcn = 'trainscg';
+net.trainParam.max_fail = 20;
 net.performFcn = 'mse';
 net.numInputs = 1;
 net.inputs{1}.size = num_input;
