@@ -1,19 +1,16 @@
-function [ net ] = build_multilayer_network( ...
+function [ net, density ] = build_multilayer_network( ...
     num_input, neurons_per_layer, num_layers, num_output, ...
     num_extra_conns, transfer_fn)
-%build_network Constructs a neural network model with random connections
-%between computation layers.  Connection placed between any two neurons in
-%computation layers with probability p.  All neurons in layer i-1 will have
-%at least one connection to neurons in layer i, and preferably these
-%guaranteed connections will be on a 1-to-1 basis
+%build_multilayer_network Constructs a neural network with a constant 
+%number of neurons per hidden layer.  All neurons in layer i-1 will have
+%at least one connection to neurons in layer i.  Additional connections are
+%randomly placed at valid locations (unoccupied connections between layer i
+%and layer i+1)
 %   num_input - number of input neurons
-%   num_output - number of output neurons
-%   layer_neurons - list of number of neurons in each of the computational
-%   layers. For instance, if this was [2 4 3], it would mean 2 neurons were
-%   in the 1st layer, 4 neurons were in the 2nd layer, and 3
-%   neurons were in the 3rd layer. The last layer is the output layer
-%   p - probability of a connection between between two neurons in adjacent
-%   computation layers
+%   neurons_per_layer - number of neurons in each hidden layer
+%   num_layers - number of hidden layers
+%   num_extra_conns - number additional connections to randomply place
+%   between valid neurons
 %   transfer_fn - the transfer function to use at each of the neurons. Type
 %   'help nntransfer' to see the list of options
 
@@ -66,9 +63,9 @@ for i=((1:num_output)+num_layer_neurons)
 end
 
 % add the additional connections probabilistically
-num_possible_conns = ...
+num_possible_extra_conns = ...
     neurons_per_layer * (neurons_per_layer - 1) * (num_layers - 1);
-possible_conns = zeros(num_possible_conns, 2);
+possible_conns = zeros(num_possible_extra_conns, 2);
 current_conn = 1;
 for i=1:num_layers-1
     for j=1:neurons_per_layer
@@ -82,10 +79,10 @@ for i=1:num_layers-1
     end
 end
 if num_extra_conns > 0
-    if num_extra_conns > num_possible_conns
+    if num_extra_conns > num_possible_extra_conns
         error('More extra connections were asked for than is possible')
     end
-    conn_idxs = randsample(num_possible_conns, num_extra_conns);
+    conn_idxs = randsample(num_possible_extra_conns, num_extra_conns);
     for idx=conn_idxs'
         layer_connections(possible_conns(idx, 1), possible_conns(idx, 2)) = 1;
     end
@@ -100,5 +97,7 @@ net.outputConnect = horzcat(...
 
 net = init(net);
 
+density = ((num_layers - 1) * neurons_per_layer + num_extra_conns) / ...
+    ((num_layers - 1) * neurons_per_layer + num_possible_extra_conns);
 end
 
