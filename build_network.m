@@ -17,7 +17,14 @@ function [ net ] = build_network( ...
 %   'help nntransfer' to see the list of options
 
 net = network;
-net.trainFcn = 'trainlm';
+net.adaptFcn = 'adaptwb';
+%net.adaptParam
+net.derivFcn = 'defaultderiv';
+net.divideFcn = 'dividerand';
+net.divideMode = 'sample';
+%net.divideParam;
+net.initFcn = 'initlay';
+net.trainFcn = 'trainscg';
 net.performFcn = 'mse';
 net.numInputs = 1;
 net.inputs{1}.size = num_input;
@@ -26,7 +33,14 @@ net.inputs{1}.size = num_input;
 layer_neurons_num = sum(layer_neurons);
 net.numLayers = layer_neurons_num;
 for i = 1:layer_neurons_num
-    net.layers{1}.transferFcn = transfer_fn;
+    net.layers{i}.transferFcn = transfer_fn;
+    net.layers{i}.size = 1;
+    net.layers{i}.initFcn = 'initnw';
+end
+
+% make transfer function for layer that connects to output
+for i=(1:layer_neurons(end)) + sum(layer_neurons(1:end-1))
+    net.layers{i}.transferFcn = 'logsig';
 end
 
 % connect input neurons to the first layer
@@ -62,8 +76,10 @@ net.layerConnect = layer_connections';
 
 % make connections to the output layer
 net.outputConnect = horzcat(...
-    zeros(1, layer_neurons_num - layer_neurons(num_layers)), ...
-    ones(1, layer_neurons(num_layers)));
+    zeros(1, layer_neurons_num - layer_neurons(end)), ...
+    ones(1, layer_neurons(end)));
+
+net = init(net);
 
 end
 
